@@ -3,10 +3,10 @@
 import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
+//parsing which mode 
+const mode = process.argv[3] || "full";
 
-// --------------------
 // READ PROJECT NAME
-// --------------------
 const projectName = process.argv[2];
 
 if (!projectName) {
@@ -22,80 +22,80 @@ if (fs.existsSync(projectPath)) {
   process.exit(1);
 }
 
-// --------------------
+
 // CREATE PROJECT ROOT
-// --------------------
+
 fs.mkdirSync(projectPath);
 console.log("📁 Project folder created");
 
-// --------------------
+
 // CREATE BACKEND STRUCTURE
-// --------------------
-const folders = [
-  "src",
-  "src/config",
-  "src/controllers",
-  "src/routes",
-  "src/models",
-  "src/middlewares"
-];
 
-folders.forEach(folder => {
-  fs.mkdirSync(path.join(projectPath, folder), { recursive: true });
-});
+function setupBackend(projectPath) {
+  const backendPath = path.join(projectPath, "backend");
+  
+  console.log("🛠️ Setting up backend...");
 
-console.log("📂 Backend folder structure created");
+  // CREATE BACKEND FOLDER
+  fs.mkdirSync(backendPath, { recursive: true });
+  console.log("📁 Backend folder created");
 
-// --------------------
-// INIT NPM PROJECT
-// --------------------
-console.log("📦 Initializing npm project...");
-execSync("npm init -y", {
-  cwd: projectPath,
-  stdio: "inherit"
-});
+  // CREATE BACKEND STRUCTURE
+  const folders = [
+    "src",
+    "src/config",
+    "src/controllers",
+    "src/routes",
+    "src/models",
+    "src/middlewares"
+  ];
 
-// --------------------
-// INSTALL DEPENDENCIES
-// --------------------
-console.log("📥 Installing dependencies...");
-execSync(
-  "npm install express mongoose dotenv cors",
-  {
-    cwd: projectPath,
+  folders.forEach(folder => {
+    fs.mkdirSync(path.join(backendPath, folder), { recursive: true });
+  });
+
+  console.log("📂 Backend folder structure created");
+
+  // INIT NPM PROJECT
+  console.log("📦 Initializing npm project...");
+  execSync("npm init -y", {
+    cwd: backendPath,
     stdio: "inherit"
-  }
-);
+  });
 
-execSync(
-  "npm install -D nodemon",
-  {
-    cwd: projectPath,
-    stdio: "inherit"
-  }
-);
+  // INSTALL DEPENDENCIES
+  console.log("📥 Installing dependencies...");
+  execSync(
+    "npm install express mongoose dotenv cors",
+    {
+      cwd: backendPath,
+      stdio: "inherit"
+    }
+  );
 
-// --------------------
-// UPDATE package.json
-// --------------------
-const pkgPath = path.join(projectPath, "package.json");
-const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  execSync(
+    "npm install -D nodemon",
+    {
+      cwd: backendPath,
+      stdio: "inherit"
+    }
+  );
 
-pkg.type = "module";
-pkg.scripts = {
-  start: "node src/server.js",
-  dev: "nodemon src/server.js"
-};
+  // UPDATE package.json
+  const pkgPath = path.join(backendPath, "package.json");
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
 
-fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
-console.log("🛠 package.json updated");
+  pkg.type = "module";
+  pkg.scripts = {
+    start: "node src/server.js",
+    dev: "nodemon src/server.js"
+  };
 
-// --------------------
-// WRITE BOILERPLATE FILES
-// --------------------
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+  console.log("🛠 package.json updated");
 
-// app.js
-const appJs = `
+  // WRITE app.js
+  const appJs = `
 import express from "express";
 import cors from "cors";
 
@@ -111,10 +111,10 @@ app.get("/", (req, res) => {
 export default app;
 `;
 
-fs.writeFileSync(path.join(projectPath, "src/app.js"), appJs);
+  fs.writeFileSync(path.join(backendPath, "src/app.js"), appJs);
 
-// server.js
-const serverJs = `
+  // WRITE server.js
+  const serverJs = `
 import app from "./app.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -130,7 +130,7 @@ mongoose.connect(process.env.MONGO_URI)
     app.listen(PORT, () => {
       console.log(\`🚀 Server is running on port \${PORT}\`);
       console.log(\`🌐 URL: http://localhost:\${PORT}\`);
-      console.log("ctrl + C to stop the server");
+      console.log("Ctrl + C to stop the server");
     });
   })
   .catch(err => {
@@ -138,31 +138,30 @@ mongoose.connect(process.env.MONGO_URI)
   });
 `;
 
+  fs.writeFileSync(path.join(backendPath, "src/server.js"), serverJs);
 
-fs.writeFileSync(path.join(projectPath, "src/server.js"), serverJs);
-
-// .env
-const envFile = `
+  // WRITE .env
+  const envFile = `
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/mydb
 `;
 
-fs.writeFileSync(path.join(projectPath, ".env"), envFile);
+  fs.writeFileSync(path.join(backendPath, ".env"), envFile);
 
-// sample controller
-const controller = `
+  // SAMPLE CONTROLLER
+  const controller = `
 export const sampleController = (req, res) => {
   res.json({ message: "Sample controller working" });
 };
 `;
 
-fs.writeFileSync(
-  path.join(projectPath, "src/controllers/sample.controller.js"),
-  controller
-);
+  fs.writeFileSync(
+    path.join(backendPath, "src/controllers/sample.controller.js"),
+    controller
+  );
 
-// sample route
-const route = `
+  // SAMPLE ROUTE
+  const route = `
 import { Router } from "express";
 import { sampleController } from "../controllers/sample.controller.js";
 
@@ -173,11 +172,156 @@ router.get("/sample", sampleController);
 export default router;
 `;
 
-fs.writeFileSync(
-  path.join(projectPath, "src/routes/sample.routes.js"),
-  route
-);
+  fs.writeFileSync(
+    path.join(backendPath, "src/routes/sample.routes.js"),
+    route
+  );
 
-console.log("✅ MERN backend boilerplate created successfully!");
-console.log(`➡️  cd ${projectName}`);
-console.log("➡️  npm run dev");
+  console.log("✅ Backend setup completed successfully");
+}
+
+// frontend setup
+function setupFrontend(projectPath) {
+  const frontendPath = path.join(projectPath, "frontend");
+  
+  console.log("⚛️ Setting up React frontend (Vite + JS + Tailwind)...");
+
+  // 1️⃣ Create React app using Vite (non-interactive, relative folder name)
+  execSync(
+    'npm create vite@latest frontend -- --template react',
+    {
+      cwd: projectPath,
+      env: { ...process.env, CI: 'true' },
+      stdio: "inherit"
+    }
+  );
+
+  // 2️⃣ Install frontend dependencies
+  console.log("📥 Installing frontend dependencies...");
+  execSync("npm install", {
+    cwd: frontendPath,
+    stdio: "inherit"
+  });
+
+  execSync(
+    "npm install react-router-dom axios",
+    {
+      cwd: frontendPath,
+      stdio: "inherit"
+    }
+  );
+
+  execSync(
+    "npm install -D tailwindcss postcss autoprefixer",
+    {
+      cwd: frontendPath,
+      stdio: "inherit"
+    }
+  );
+
+  // 3️⃣ Initialize Tailwind
+  execSync(
+    "npx tailwindcss init -p",
+    {
+      cwd: frontendPath,
+      stdio: "inherit"
+    }
+  );
+
+  console.log("🎨 Tailwind installed");
+
+  // 4️⃣ Configure Tailwind
+  const tailwindConfig = `
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx}"
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+`;
+
+  fs.writeFileSync(
+    path.join(frontendPath, "tailwind.config.js"),
+    tailwindConfig
+  );
+
+  const indexCss = `
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+`;
+
+  fs.writeFileSync(
+    path.join(frontendPath, "src/index.css"),
+    indexCss
+  );
+
+  // 5️⃣ Create basic folder structure
+  const feFolders = [
+    "src/components",
+    "src/pages",
+    "src/services"
+  ];
+
+  feFolders.forEach(folder => {
+    fs.mkdirSync(path.join(frontendPath, folder), { recursive: true });
+  });
+
+  // 6️⃣ Home page
+  const homePage = `
+export default function Home() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <h1 className="text-3xl font-bold text-blue-600">
+        🚀 MERN-GEN Frontend Ready
+      </h1>
+    </div>
+  );
+}
+`;
+
+  fs.writeFileSync(
+    path.join(frontendPath, "src/pages/Home.jsx"),
+    homePage
+  );
+
+  // 7️⃣ App.jsx
+  const appJsx = `
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+`;
+
+  fs.writeFileSync(
+    path.join(frontendPath, "src/App.jsx"),
+    appJsx
+  );
+
+  console.log("✅ Frontend setup complete");
+  console.log("📂 Frontend folder: ./frontend");
+  console.log("🚀 To start frontend: cd frontend && npm run dev");
+}
+if (mode === "frontend") {
+  setupFrontend(projectPath);
+} else if (mode === "backend") {
+  setupBackend(projectPath);
+} else {
+  // default: full stack
+  setupBackend(projectPath);
+  setupFrontend(projectPath);
+}
+
+

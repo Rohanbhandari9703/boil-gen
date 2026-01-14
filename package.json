@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "CLI to scaffold a standard MERN backend boilerplate",
   "bin": {
-    "imern-gen": "./index.js"
+    "mern-gen": "./index.js"
   },
   "type": "module",
   "main": "index.js",
