@@ -539,6 +539,13 @@ export default defineConfig({
       console.log("✅ Created new src/index.css with Tailwind import");
     }
 
+    // Ensure postcss.config.js is removed if it was created
+    const postcssPath = path.join(frontendPath, "postcss.config.js");
+    if (fs.existsSync(postcssPath)) {
+      fs.unlinkSync(postcssPath);
+      console.log("🗑️  Removed auto-generated postcss.config.js");
+    }
+
     console.log("✅ Tailwind CSS configured successfully!");
   } catch (error) {
     console.warn(`⚠️  Tailwind setup had issues: ${error.message}`);
@@ -658,7 +665,9 @@ async function generateProject() {
   // Infer language from the generated architecture
   let language = "javascript";
   const allDevDeps = [...(arch.frontend.devDependencies || []), ...(arch.backend.devDependencies || [])];
-  if (allDevDeps.some(d => d.includes("typescript"))) {
+  const allFiles = [...(arch.frontend.files || []), ...(arch.backend.files || [])];
+
+  if (allDevDeps.some(d => d.includes("typescript")) || allFiles.some(f => f.endsWith(".ts") || f.endsWith(".tsx"))) {
     language = "typescript";
   }
 
@@ -755,6 +764,36 @@ async function generateProject() {
       }
     }
 
+    // Ensure TypeScript dependencies are present if language is TypeScript
+    if (language === "typescript") {
+      if (!arch.backend.devDependencies) arch.backend.devDependencies = [];
+      const requiredDevDeps = ["typescript", "tsx", "@types/node"];
+
+      // Add type definitions for common packages if they are being used
+      const allBackendDeps = [...(arch.backend.dependencies || []), ...(arch.backend.devDependencies || [])];
+      if (allBackendDeps.some(d => d.includes("express"))) requiredDevDeps.push("@types/express");
+      if (allBackendDeps.some(d => d.includes("cors"))) requiredDevDeps.push("@types/cors");
+      if (allBackendDeps.some(d => d.includes("mongoose"))) requiredDevDeps.push("@types/mongoose");
+      if (allBackendDeps.some(d => d.includes("morgan"))) requiredDevDeps.push("@types/morgan");
+      if (allBackendDeps.some(d => d.includes("jsonwebtoken"))) requiredDevDeps.push("@types/jsonwebtoken");
+      if (allBackendDeps.some(d => d.includes("bcrypt"))) requiredDevDeps.push("@types/bcryptjs");
+
+      requiredDevDeps.forEach(dep => {
+        // Check if dependency is already included (checking by name, ignoring version)
+        const isIncluded = arch.backend.devDependencies.some(d => {
+          const depName = d.split("@")[0] || d; // Handle versioned deps like "dep@1.0.0" (simple check)
+          return d.includes(dep);
+        });
+
+        if (!isIncluded) {
+          arch.backend.devDependencies.push(dep);
+        }
+      });
+
+      // Also ensure start/dev scripts are correct in the architecture so they don't get overwritten incorrectly later? 
+      // Actually we handle scripts in the final package.json replacement, but adding them to arch helps if we used arch.scripts
+    }
+
     if (arch.backend.dependencies?.length > 0 || arch.backend.devDependencies?.length > 0) {
       console.log("📦 Installing backend dependencies...");
       installDependencies(
@@ -802,13 +841,13 @@ async function generateProject() {
   console.log(`\n📂 Project location: ${projectPath}`);
   console.log("\n🚀 Next steps:");
   if (hasFrontend) {
-    console.log(`   cd ${projectName}/frontend && npm run dev`);
+    console.log(`   cd ${projectName}/frontend \n npm run dev`);
   }
   if (hasBackend) {
-    console.log(`   cd ${projectName}/backend && npm start`);
+    console.log(`   cd ${projectName}/backend \n npm start`);
   }
   if (!hasFrontend && !hasBackend) {
-    console.log(`   cd ${projectName} && npm install`);
+    console.log(`   cd ${projectName} \n npm install`);
   }
 }
 
