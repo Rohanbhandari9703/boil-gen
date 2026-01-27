@@ -2,14 +2,28 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+// 1. Rate Limiting: 5 requests per minute
+const limiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: { success: false, error: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use(limiter);
+
+app.use(cors({
+    origin: false
+}));
+app.use(express.json({ limit: "10kb" }));
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -93,6 +107,14 @@ app.post("/generate", async (req, res) => {
 
         if (!prompt) {
             return res.status(400).json({ error: "Prompt is required" });
+        }
+
+        if (typeof prompt !== "string") {
+            return res.status(400).json({ error: "Prompt must be a string" });
+        }
+
+        if (prompt.length > 500) {
+            return res.status(400).json({ error: "Prompt exceeds 500 characters limit" });
         }
 
         const projectType = detectProjectType(prompt);

@@ -258,7 +258,7 @@ async function callAI(prompt, projectType, retries = 3) {
   // For the final npm package, this URL should point to the deployed proxy server.
   const API_URL = process.env.MERN_GEN_PROXY_URL || "http://localhost:5001/generate";
 
-  console.log(`🌐 Connecting to AI Server at ${API_URL}...`);
+  console.log(`🌐 Connecting to Server...`);
 
   for (let i = 0; i < retries; i++) {
     try {
@@ -553,7 +553,7 @@ async function generateProject() {
   }
 
   const projectType = detectProjectType(userPrompt);
-  console.log(`🤖 Analyzing your request... (Detected: ${projectType === "frontend" ? "Frontend-only" : projectType === "backend" ? "Backend-only" : "Fullstack"})`);
+  console.log(`🤖 Analyzing your request...`);
 
 
   let arch;
@@ -743,13 +743,13 @@ async function generateProject() {
   console.log(`\n📂 Project location: ${projectPath}`);
   console.log("\n🚀 Next steps:");
   if (hasFrontend) {
-    console.log(`   cd ${projectName}/frontend \n npm run dev`);
+    console.log(`   cd ${projectName}/frontend \n      npm run dev`);
   }
   if (hasBackend) {
-    console.log(`   cd ${projectName}/backend \n npm start`);
+    console.log(`   cd ${projectName}/backend \n      npm start`);
   }
   if (!hasFrontend && !hasBackend) {
-    console.log(`   cd ${projectName} \n npm install`);
+    console.log(`   cd ${projectName} \n      npm install`);
   }
 }
 
