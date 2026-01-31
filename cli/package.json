@@ -17,7 +17,11 @@
     "mongodb",
     "boilerplate"
   ],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rohanbhandari9703/mern-gen.git"
+  },
+  "author": "Rohan Bhandari",
   "license": "ISC",
   "dependencies": {
     "@google/genai": "^1.37.0",

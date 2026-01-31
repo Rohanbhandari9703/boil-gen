@@ -194,7 +194,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(\`🚀 Server running on http://localhost:\${PORT}\`);
+  console.log(\`Server running on http://localhost:\${PORT}\`);
 });
 
 export default app;`;
@@ -254,11 +254,10 @@ root.render(<App />);`;
 }
 
 async function callAI(prompt, projectType, retries = 3) {
-  // Use localhost for development, but this should be configured or environment variable driven
-  // For the final npm package, this URL should point to the deployed proxy server.
+
   const API_URL = process.env.MERN_GEN_PROXY_URL || "http://localhost:5001/generate";
 
-  console.log(`🌐 Connecting to Server...`);
+  console.log(`Connecting to Server at ....`);
 
   for (let i = 0; i < retries; i++) {
     try {
@@ -284,7 +283,7 @@ async function callAI(prompt, projectType, retries = 3) {
 
     } catch (error) {
       if (i === retries - 1) throw error;
-      console.warn(`⚠️  Connection failed (attempt ${i + 1}/${retries}). Retrying...`);
+      console.warn(`Connection failed (attempt ${i + 1}/${retries}). Retrying...`);
       await new Promise(r => setTimeout(r, 1000 * (i + 1)));
     }
   }
@@ -297,7 +296,7 @@ function createDirectory(dirPath) {
       fs.mkdirSync(dirPath, { recursive: true });
     }
   } catch (error) {
-    console.warn(`⚠️  Could not create directory ${dirPath}: ${error.message}`);
+    console.warn(`Could not create directory ${dirPath}: ${error.message}`);
   }
 }
 
@@ -307,7 +306,7 @@ function createFile(filePath, content) {
     createDirectory(dir);
     fs.writeFileSync(filePath, content, "utf-8");
   } catch (error) {
-    console.warn(`⚠️  Could not create file ${filePath}: ${error.message}`);
+    console.warn(`Could not create file ${filePath}: ${error.message}`);
   }
 }
 
@@ -333,16 +332,16 @@ function installDependencies(basePath, deps, devDeps = []) {
       });
     }
   } catch (error) {
-    console.warn(`⚠️  Dependency installation had issues: ${error.message}`);
+    console.warn(`Dependency installation had issues: ${error.message}`);
   }
 }
 
 function setupTailwindCSS(frontendPath) {
   try {
-    console.log("🎨 Setting up Tailwind CSS...");
+    console.log("Setting up Tailwind CSS...");
 
     // Step 1: Install Tailwind CSS and Vite plugin
-    console.log("📦 Installing tailwindcss and @tailwindcss/vite...");
+    console.log("Installing tailwindcss and @tailwindcss/vite...");
     execSync("npm install tailwindcss @tailwindcss/vite", {
       cwd: frontendPath,
       stdio: "inherit"
@@ -390,9 +389,9 @@ function setupTailwindCSS(frontendPath) {
           );
         }
         fs.writeFileSync(viteConfigPath, viteConfigContent);
-        console.log(`✅ Updated ${isTypeScript ? 'vite.config.ts' : 'vite.config.js'} with Tailwind plugin`);
+        console.log(`Updated ${isTypeScript ? 'vite.config.ts' : 'vite.config.js'} with Tailwind plugin`);
       } else {
-        console.log(`✅ ${isTypeScript ? 'vite.config.ts' : 'vite.config.js'} already has Tailwind plugin`);
+        console.log(`${isTypeScript ? 'vite.config.ts' : 'vite.config.js'} already has Tailwind plugin`);
       }
     } else {
       // Create new vite.config.ts with React and Tailwind
@@ -408,7 +407,7 @@ export default defineConfig({
   ],
 })`;
       createFile(viteConfigPath, viteConfigContent);
-      console.log("✅ Created vite.config.ts with Tailwind plugin");
+      console.log("Created vite.config.ts with Tailwind plugin");
     }
 
     // Step 3: Add @import to CSS file
@@ -423,11 +422,11 @@ export default defineConfig({
           cssContent = `@import "tailwindcss";\n\n${cssContent}`;
           fs.writeFileSync(fullCssPath, cssContent);
           cssFileFound = true;
-          console.log(`✅ Added Tailwind import to ${cssFile}`);
+          console.log(`Added Tailwind import to ${cssFile}`);
           break;
         } else {
           cssFileFound = true;
-          console.log(`✅ Tailwind import already present in ${cssFile}`);
+          console.log(`Tailwind import already present in ${cssFile}`);
           break;
         }
       }
@@ -438,19 +437,19 @@ export default defineConfig({
       const newCssPath = path.join(frontendPath, "src", "index.css");
       createDirectory(path.dirname(newCssPath));
       createFile(newCssPath, `@import "tailwindcss";\n`);
-      console.log("✅ Created new src/index.css with Tailwind import");
+      console.log("Created new src/index.css with Tailwind import");
     }
 
     // Ensure postcss.config.js is removed if it was created
     const postcssPath = path.join(frontendPath, "postcss.config.js");
     if (fs.existsSync(postcssPath)) {
       fs.unlinkSync(postcssPath);
-      console.log("🗑️  Removed auto-generated postcss.config.js");
+      console.log("Removed auto-generated postcss.config.js");
     }
 
-    console.log("✅ Tailwind CSS configured successfully!");
+    console.log("Tailwind CSS configured successfully!");
   } catch (error) {
-    console.warn(`⚠️  Tailwind setup had issues: ${error.message}`);
+    console.warn(`Tailwind setup had issues: ${error.message}`);
   }
 }
 
@@ -509,7 +508,7 @@ function fixNestedFolders(basePath) {
       }
     }
   } catch (error) {
-    console.warn(`⚠️  Error fixing nested folders: ${error.message}`);
+    console.warn(`Error fixing nested folders: ${error.message}`);
   }
 }
 
@@ -539,7 +538,7 @@ function setupFramework(basePath, framework, projectName, language) {
       fixNestedFolders(basePath);
     }
   } catch (error) {
-    console.warn(`⚠️  Framework setup had issues: ${error.message}`);
+    console.warn(`Framework setup had issues: ${error.message}`);
   }
 }
 
@@ -547,20 +546,20 @@ async function generateProject() {
   const userPrompt = process.argv.slice(2).join(" ").trim();
 
   if (!userPrompt) {
-    console.error("❌ Please provide a project description");
+    console.error("Please provide a project description");
     console.log("Usage: mern-gen \"build a fullstack app for X\"");
     process.exit(1);
   }
 
   const projectType = detectProjectType(userPrompt);
-  console.log(`🤖 Analyzing your request...`);
+  console.log(`Analyzing your request... (Detected: ${projectType === "frontend" ? "Frontend-only" : projectType === "backend" ? "Backend-only" : "Fullstack"})`);
 
 
   let arch;
   try {
     arch = await callAI(userPrompt, projectType);
   } catch (error) {
-    console.error(`❌ Failed to generate architecture: ${error.message}`);
+    console.error(`Failed to generate architecture: ${error.message}`);
     process.exit(1);
   }
 
@@ -573,20 +572,20 @@ async function generateProject() {
     language = "typescript";
   }
 
-  console.log(`✅ Architecture generated. Using ${language === "typescript" ? "TypeScript" : "JavaScript"} based on AI decision.`);
+  console.log(`Architecture generated. Using ${language === "typescript" ? "TypeScript" : "JavaScript"} based on AI decision.`);
 
   const projectName = sanitizePath(arch.projectName || "my-project");
   const projectPath = path.join(process.cwd(), projectName);
 
   if (fs.existsSync(projectPath)) {
-    console.error(`❌ Directory "${projectName}" already exists`);
+    console.error(`Directory "${projectName}" already exists`);
     process.exit(1);
   }
 
-  console.log(`📁 Creating project: ${projectName}`);
+  console.log(`Creating project: ${projectName}`);
   createDirectory(projectPath);
 
-  console.log("📂 Setting up project structure...");
+  console.log("Setting up project structure...");
 
   const rootFiles = arch.rootFiles || [];
   rootFiles.push("README.md", ".gitignore");
@@ -601,7 +600,7 @@ async function generateProject() {
   const hasBackend = arch.backend && (arch.backend.files?.length > 0 || arch.backend.folders?.length > 0 || arch.backend.framework);
 
   if (hasFrontend) {
-    console.log("⚛️  Setting up frontend...");
+    console.log("Setting up frontend...");
     const frontendPath = path.join(projectPath, "frontend");
     createDirectory(frontendPath);
 
@@ -630,7 +629,7 @@ async function generateProject() {
     }
 
     if (arch.frontend.dependencies?.length > 0 || arch.frontend.devDependencies?.length > 0) {
-      console.log("📦 Installing frontend dependencies...");
+      console.log("Installing frontend dependencies...");
       installDependencies(
         frontendPath,
         arch.frontend.dependencies || [],
@@ -642,7 +641,7 @@ async function generateProject() {
   }
 
   if (hasBackend) {
-    console.log("🔧 Setting up backend...");
+    console.log("Setting up backend...");
     const backendPath = path.join(projectPath, "backend");
     createDirectory(backendPath);
 
@@ -697,7 +696,7 @@ async function generateProject() {
     }
 
     if (arch.backend.dependencies?.length > 0 || arch.backend.devDependencies?.length > 0) {
-      console.log("📦 Installing backend dependencies...");
+      console.log("Installing backend dependencies...");
       installDependencies(
         backendPath,
         arch.backend.dependencies || [],
@@ -735,25 +734,25 @@ async function generateProject() {
       };
 
       fs.writeFileSync(backendPackageJsonPath, JSON.stringify(updatedPackage, null, 2));
-      console.log("✅ Backend package.json configured with proper scripts");
+      console.log("Backend package.json configured with proper scripts");
     }
   }
 
-  console.log("✅ Project generated successfully!");
-  console.log(`\n📂 Project location: ${projectPath}`);
-  console.log("\n🚀 Next steps:");
+  console.log("Project generated successfully!");
+  console.log(`\nProject location: ${projectPath}`);
+  console.log("\nNext steps:");
   if (hasFrontend) {
-    console.log(`   cd ${projectName}/frontend \n      npm run dev`);
+    console.log(`   cd ${projectName}/frontend \n npm run dev`);
   }
   if (hasBackend) {
-    console.log(`   cd ${projectName}/backend \n      npm start`);
+    console.log(`   cd ${projectName}/backend \n npm start`);
   }
   if (!hasFrontend && !hasBackend) {
-    console.log(`   cd ${projectName} \n      npm install`);
+    console.log(`   cd ${projectName} \n npm install`);
   }
 }
 
 generateProject().catch(error => {
-  console.error("❌ Fatal error:", error.message);
+  console.error("Fatal error:", error.message);
   process.exit(1);
 });
